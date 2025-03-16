@@ -5,19 +5,29 @@ import { useState } from "react";
 export default function Home() {
   const [searchWord, setSearchWord] = useState("");
   const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const fetchResults = () => {
-    getSearchResults(searchWord)
-      .then((sR: any) => {
-        setResults(sR);
-      })
-      .catch((er) => {
-        console.log(er);
-      });
+  const fetchResults = async () => {
+    setLoading(true);
+    try {
+      const sR = await getSearchResults(searchWord).then((r: any) => r);
+      setResults(sR);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 text-gray-900">
+    <div className="min-h-screen flex flex-col bg-gray-50 text-gray-900 relative">
+      {/* Loader Overlay */}
+      {loading && (
+        <div className="fixed inset-0 flex justify-center items-center z-50 bg-opacity-10">
+        <div className="w-16 h-16 border-t-4 border-blue-500 border-solid rounded-full animate-spin"></div>
+      </div>
+      )}
+
       {/* Header */}
       <header className="w-full py-6 bg-blue-600 text-white text-center text-2xl font-semibold shadow-md">
         Web3 Connector Portal
@@ -40,8 +50,9 @@ export default function Home() {
             <button
               onClick={fetchResults}
               className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
+              disabled={loading}
             >
-              Search
+              {loading ? "Searching..." : "Search"}
             </button>
           </div>
         </div>
